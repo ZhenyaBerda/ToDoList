@@ -6,7 +6,7 @@ let add = document.querySelector('#add'),
     toDo = document.querySelector('#todo'),
     completed = document.querySelector('#completed'),
     completeItem = document.querySelector('.todo-completed'),
-    toDoComplete = document.querySelectorAll('.todo-complete'),
+    toDoComplete = toDo.querySelectorAll('.todo-complete'),
     toDoRemove = document.querySelectorAll('.todo-remove');
 
 const secondParent = function (item) {
@@ -19,6 +19,7 @@ const toDoList = {
     completed: [],
 
     start: function () {
+
         // подчищаем верстку
         toDo.innerHTML = '';
         completed.innerHTML = '';
@@ -42,12 +43,13 @@ const toDoList = {
         });
 
         // вешаем слушателей на кнопку выполнено
-        toDoComplete = document.querySelectorAll('.todo-complete');
+        toDoComplete = toDo.querySelectorAll('.todo-complete');
         toDoComplete.forEach(button => {
             button.addEventListener('click', toDoList.completeItem);
         });
     },
 
+    // вывод задач из LocalStorage
     outputToDo: function () {
         this.todo.forEach(function (item) {
             let newItem = toDoItem.cloneNode(true);
@@ -56,6 +58,7 @@ const toDoList = {
         });
     },
 
+    //вывод выполненных задач из localStorage
     outputCompleted: function () {
         this.completed.forEach(function (item) {
             let newItem = toDoItem.cloneNode(true);
@@ -72,46 +75,74 @@ const toDoList = {
         // добавляем элемент на страницу
         let newItem = toDoItem.cloneNode(true);
         newItem.querySelector('p').textContent = this.todo[this.todo.length - 1];
+        newItem.querySelector('.todo-complete').addEventListener('click', toDoList.completeItem);
+        newItem.querySelector('.todo-remove').addEventListener('click', toDoList.removeItem);
         toDo.insertBefore(newItem, null);
     },
 
     completeItem: function () {
+
         let completeItem = secondParent(this),
             str = completeItem.querySelector('p').textContent;
-        console.log(str);
-        completed.insertBefore(completeItem, null);
-        console.log(this);
-        this.addEventListener('click', function (event) {
-            event.preventDefault();
-        });
 
+        // переносим элемент
+        completed.insertBefore(completeItem, null);
+        // удаляем с кнопки слушателя
+        this.removeEventListener('click', toDoList.completeItem);
+
+        //удаляет из массива todo выполненную задачу
         toDoList.todo.forEach(function (item, i) {
             if (item === str) {
                 toDoList.todo.splice(i, 1);
             }
         });
+        // добавляем выполненную задачу в массив completed
         toDoList.completed.push(str);
 
-        localStorage.setItem('todo', toDoList.todo);
-        localStorage.setItem('completed', toDoList.completed);
+        // обновление localStorage, предварительно проверив наличие элементов в массиве
+        if (toDoList.todo.length !== 0) {
+            localStorage.setItem('todo', toDoList.todo);
+        } else {
+            localStorage.removeItem('todo');
+        }
 
-        console.log(this);
+        localStorage.setItem('completed', toDoList.completed);
 
     },
 
+    // удаление элемента
     removeItem: function () {
+        // удаление элемента
         let removeItem = secondParent(this),
             str = removeItem.querySelector('p').textContent;
         removeItem.remove();
+        console.log(str);
 
+        // ищем элемент 
+        toDoList.todo.forEach(function (item, i) {
+            if (item === str) {
+                toDoList.todo.splice(i, 1);
+            }
+        });
+        toDoList.completed.forEach(function (item, i) {
+            if (item === str) {
+                toDoList.completed.splice(i, 1);
+            }
+        });
 
-        localStorage.setItem('todo', toDoList.todo);
-        localStorage.setItem('completed', toDoList.completed);
+        // обновление localStorage, предварительно проверив наличие элементов в массиве
+        if (toDoList.todo.length !== 0) {
+            localStorage.setItem('todo', toDoList.todo);
+        } else {
+            localStorage.removeItem('todo');
+        }
+
+        if (toDoList.completed.length !== 0) {
+            localStorage.setItem('completed', toDoList.completed);
+        } else {
+            localStorage.removeItem('completed');
+        }
     },
-
-
-
-
 };
 
 const addInput = function (event) {
