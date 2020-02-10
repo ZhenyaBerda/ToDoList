@@ -116,7 +116,6 @@ const toDoList = {
         let removeItem = secondParent(this),
             str = removeItem.querySelector('p').textContent;
         removeItem.remove();
-        console.log(str);
 
         // ищем элемент 
         toDoList.todo.forEach(function (item, i) {
