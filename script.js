@@ -7,6 +7,7 @@ let add = document.querySelector('#add'),
     completed = document.querySelector('#completed'),
     completeItem = document.querySelector('.todo-completed'),
     toDoComplete = toDo.querySelectorAll('.todo-complete'),
+    completedUncheck = completed.querySelectorAll('.todo-complete'),
     toDoRemove = document.querySelectorAll('.todo-remove');
 
 const secondParent = function (item) {
@@ -46,6 +47,12 @@ const toDoList = {
         toDoComplete = toDo.querySelectorAll('.todo-complete');
         toDoComplete.forEach(button => {
             button.addEventListener('click', toDoList.completeItem);
+        });
+
+        // перемещение выполненных действий обратно в задачи
+        completedUncheck = completed.querySelectorAll('.todo-complete');
+        completedUncheck.forEach(button => {
+            button.addEventListener('click', toDoList.uncheckedItem);
         });
     },
 
@@ -89,6 +96,7 @@ const toDoList = {
         completed.insertBefore(completeItem, null);
         // удаляем с кнопки слушателя
         this.removeEventListener('click', toDoList.completeItem);
+        this.addEventListener('click', toDoList.uncheckedItem);
 
         //удаляет из массива todo выполненную задачу
         toDoList.todo.forEach(function (item, i) {
@@ -108,6 +116,37 @@ const toDoList = {
 
         localStorage.setItem('completed', toDoList.completed);
 
+    },
+
+    // отмена выполненного действия
+    uncheckedItem: function () {
+
+        let completeItem = secondParent(this),
+            str = completeItem.querySelector('p').textContent;
+
+        // переносим элемент
+        toDo.insertBefore(completeItem, null);
+        // удаляем с кнопки слушателя
+        this.removeEventListener('click', toDoList.uncheckedItem);
+        this.addEventListener('click', toDoList.completeItem);
+
+        //удаляет из массива completed выполненную задачу
+        toDoList.completed.forEach(function (item, i) {
+            if (item === str) {
+                toDoList.completed.splice(i, 1);
+            }
+        });
+        // добавляем выполненную задачу в массив completed
+        toDoList.todo.push(str);
+
+        // обновление localStorage, предварительно проверив наличие элементов в массиве
+        if (toDoList.completed.length !== 0) {
+            localStorage.setItem('completed', toDoList.completed);
+        } else {
+            localStorage.removeItem('completed');
+        }
+
+        localStorage.setItem('todo', toDoList.todo);
     },
 
     // удаление элемента
